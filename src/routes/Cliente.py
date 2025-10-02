@@ -57,3 +57,49 @@ def NovoCliente():
     return jsonify(consulta_data)
 
 
+@cliente_routes.route('/api/md_bordados/AlterarCliente', methods=['PUT'])
+@token_required
+def AlterarCliente():
+    data = request.get_json()
+    codCliente = data.get('codCliente')
+    nomeCliente = data.get('nomeCliente', '-')
+    cnpj_cpf =  data.get('cnpj_cpf', '-')
+    situacao = data.get('situacao', '-')
+
+    cliente = Cliente.Cliente(codCliente,nomeCliente,cnpj_cpf, situacao)
+    consulta = cliente.put_cliente()
+
+    # Obtém os nomes das colunas
+    column_names = consulta.columns
+    # Monta o dicionário com os cabeçalhos das colunas e os valores correspondentes
+    consulta_data = []
+    for index, row in consulta.iterrows():
+        consulta_dict = {}
+        for column_name in column_names:
+            consulta_dict[column_name] = row[column_name]
+        consulta_data.append(consulta_dict)
+    return jsonify(consulta_data)
+
+
+@cliente_routes.route('/api/md_bordados/ExcluirCliente', methods=['PUT'])
+@token_required
+def ExcluirCliente():
+    data = request.get_json()
+    codCliente = data.get('codCliente')
+
+    cliente = Cliente.Cliente(codCliente)
+    consulta = cliente.delete_cliente_especifico()
+
+    # Obtém os nomes das colunas
+    column_names = consulta.columns
+    # Monta o dicionário com os cabeçalhos das colunas e os valores correspondentes
+    consulta_data = []
+    for index, row in consulta.iterrows():
+        consulta_dict = {}
+        for column_name in column_names:
+            consulta_dict[column_name] = row[column_name]
+        consulta_data.append(consulta_dict)
+    return jsonify(consulta_data)
+
+
+

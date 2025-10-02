@@ -73,6 +73,35 @@ class Cliente ():
     def put_cliente(self):
         """Metodo publico que atualiza informacoes de um cliente """
 
+        update = f"""
+        update from 
+            clientes
+        set 
+            "nomeCliente" = %s,
+            "situacao" = %s,
+            "CNPJ/CPF" = %s
+        where  
+            codcliente = '{str(self.codCliente)}'
+        """
+
+        verifica_cpf = self.__verificanco_dupliccao_cpf()
+        verifica_codCliente = self.get_cliente_especifico()
+
+        if verifica_cpf == False:
+            return pd.DataFrame([{'Mensagem': 'CPF/CNPJ JA EXISTE PARA OUTRO CLIENTE !', 'status': False}])
+        else:
+
+            if  verifica_codCliente.empty:
+                return pd.DataFrame([{'Mensagem': 'cliente nao possue cadastro !', 'status': False}])
+
+            else:
+                    with Conexao.conexao() as conn:
+                        with conn.cursor() as curr:
+                            curr.execute(update,( self.nomeCliente, self.situacaoCliente, self.cnpj_cpf))
+                            conn.commit()
+                    return pd.DataFrame([{'Mensagem':'Usuario alterado com sucesso !','status':True}])
+
+
     def get_cliente_especifico(self):
         """Metodo publico que obtem informacoes de um cliente em espercifico"""
 
@@ -98,6 +127,19 @@ class Cliente ():
 
     def delete_cliente_especifico(self):
         """Metodo que exclui o cliente do erp , se ele nao tiver movimentacoes em outras tabelas"""
+
+        delete = f"""
+        delete from 
+        clientes 
+        where 
+        codcliente = '{str(self.codCliente)}'
+        """
+
+        with Conexao.conexao() as conn:
+            with conn.cursor() as curr:
+                curr.execute(delete)
+                conn.commit()
+        return pd.DataFrame([{'Mensagem': 'Usuario alterado com sucesso !', 'status': True}])
 
     def __verificanco_dupliccao_cpf(self):
         """Metodo privado que valida o cpf e cnpj do cliente """
