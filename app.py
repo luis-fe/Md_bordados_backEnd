@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
-from routes import routes_blueprint
+from src.routes import routes_blueprint
 app = Flask(__name__)
 port = int(os.environ.get('PORT', 5000))
 
