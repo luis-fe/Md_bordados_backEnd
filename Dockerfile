@@ -23,4 +23,4 @@ COPY . /app
 WORKDIR /app
 
 # Comando para iniciar a aplicação
-CMD ["python", "main.py"]
+CMD ["python", "app.py"]
