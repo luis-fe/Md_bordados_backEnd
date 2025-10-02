@@ -33,3 +33,27 @@ def Clientes_jonh_field():
     return jsonify(consulta_data)
 
 
+@cliente_routes.route('/api/md_bordados/NovoCliente', methods=['POST'])
+@token_required
+def NovoCliente():
+    data = request.get_json()
+    codCliente = data.get('codCliente')
+    nomeCliente = data.get('nomeCliente', '-')
+    cnpj_cpf =  data.get('cnpj_cpf', '-')
+    situacao = data.get('situacao', '-')
+
+    cliente = Cliente.Cliente(codCliente,nomeCliente,cnpj_cpf, situacao)
+    consulta = cliente.post_cliente()
+
+    # Obtém os nomes das colunas
+    column_names = consulta.columns
+    # Monta o dicionário com os cabeçalhos das colunas e os valores correspondentes
+    consulta_data = []
+    for index, row in consulta.iterrows():
+        consulta_dict = {}
+        for column_name in column_names:
+            consulta_dict[column_name] = row[column_name]
+        consulta_data.append(consulta_dict)
+    return jsonify(consulta_data)
+
+
