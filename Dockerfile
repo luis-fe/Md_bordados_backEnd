@@ -10,15 +10,11 @@ RUN apt-get update && \
 # Crie e ative um ambiente virtual Python
 RUN python -m venv --copies /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-gir
-# Copie o arquivo de requisitos e instale dependências Python
 
+# Copie o arquivo de requisitos e instale dependências Python
 COPY requirements.txt .
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt
-
-
-
 
 # Copie o código da aplicação para o contêiner
 COPY . /app
