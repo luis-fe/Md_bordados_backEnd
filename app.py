@@ -1,23 +1,19 @@
-from flask import Flask
+from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
 import os
-
-from src.configApp import configApp
-from src.routes import routes_blueprint  # Certifique-se de que 'routes.py' está na mesma pasta
-from dotenv import load_dotenv
-
+from routes import routes_blueprint
 app = Flask(__name__)
-env_path = configApp.localProjeto
-# Carregar variáveis de ambiente do arquivo .env
-load_dotenv(f'{env_path}/var_ambiente.env')
-porta_escolhida = os.getenv('PORTA_APLICACAO')
+port = int(os.environ.get('PORT', 5000))
 
-port = int(os.environ.get('PORT', int(porta_escolhida)))
-
-# Registrar o Blueprint corretamente
 app.register_blueprint(routes_blueprint)
+#Aqui registo todas as rotas , url's DO PROJETO, para acessar bastar ir na pasta "routes",
+#duvidas o contato (62)99351-42-49 ou acessar a documentacao do projeto em:
+
+CORS(app)
+
+# Decorator para verificar o token fixo
+
+
 
 if __name__ == '__main__':
-
-
-
     app.run(host='0.0.0.0', port=port)
