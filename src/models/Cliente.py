@@ -25,7 +25,7 @@ class Cliente ():
             clientes c
         """
 
-        conn = conexao.conexaoEngine()
+        conn = Conexao.conexaoEngine()
         consulta = pd.read_sql(SQL,conn)
 
         return consulta
@@ -53,7 +53,7 @@ class Cliente ():
             codcliente = '{str(self.codCliente)}'
         """
 
-        conn = conexao.conexaoEngine()
+        conn = Conexao.conexaoEngine()
         consulta = pd.read_sql(SQL, conn)
 
         return consulta
