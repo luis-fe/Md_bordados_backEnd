@@ -4,7 +4,7 @@ from flask import Blueprint
 routes_blueprint = Blueprint('routes', __name__)
 
 # Importe as rotas dos arquivos individuais
-from Cliente import cliente_routes
+from src.routes.Cliente import cliente_routes
 
 
 # Registre as rotas nos blueprints
