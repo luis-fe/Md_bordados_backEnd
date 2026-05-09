@@ -1,7 +1,7 @@
 # app.py
 
 from flask import Flask
-from routes import init_routes  # Importa a função do __init__.py da pasta routes
+from src.routes import init_routes  # Importa a função do __init__.py da pasta routes
 
 app = Flask(__name__)
 
