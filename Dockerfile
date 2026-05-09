@@ -23,10 +23,11 @@ COPY . .
 # Expõe a porta 5000, que é a padrão do Flask
 EXPOSE 5000
 
-# Define variáveis de ambiente padrão do Flask
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_ENV=production
 
-# Comando para rodar a aplicação quando o container iniciar
+# ADICIONE ESTA LINHA AQUI:
+ENV PYTHONPATH=/app
+
 CMD ["flask", "run"]
