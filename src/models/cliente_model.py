@@ -1,6 +1,6 @@
 # models/cliente_model.py
 
-from connection import db_config
+from src.connection import db_config
 
 
 class Cliente:
