@@ -30,4 +30,4 @@ ENV FLASK_ENV=production
 # ADICIONE ESTA LINHA AQUI:
 ENV PYTHONPATH=/app
 
-CMD ["flask", "run"]
+CMD sh -c "flask run --host=0.0.0.0 --port=${PORT:-5000}"
