@@ -1,6 +1,6 @@
 # services/cliente_service.py
 
-from models.cliente_model import Cliente
+from src.models.cliente_model import Cliente
 
 class ServiceCliente:
     def __init__(self):
