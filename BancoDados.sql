@@ -10,8 +10,8 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. TABELAS INDEPENDENTES (Sem chaves estrangeiras)
 -- ==============================================================================
 
-CREATE TABLE clientes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- ID não sequencial
+CREATE TABLE IF NOT EXISTS clientes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cnpj_cpf VARCHAR(18) UNIQUE NOT NULL,
     razao_social VARCHAR(150) NOT NULL,
     descricao_cliente TEXT,
@@ -20,33 +20,32 @@ CREATE TABLE clientes (
     contato VARCHAR(50)
 );
 
-CREATE TABLE fase (
+CREATE TABLE IF NOT EXISTS fase (
     cod_fase SERIAL PRIMARY KEY,
     descricao_fase VARCHAR(100) NOT NULL,
     fase_finalizacao BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE roteiro_padrao (
+CREATE TABLE IF NOT EXISTS roteiro_padrao (
     cod_roteiro SERIAL PRIMARY KEY,
     descricao_roteiro VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     cod_usuario SERIAL PRIMARY KEY,
     nome_usuario VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE tamanho (
-    cod_tamanho VARCHAR(10) PRIMARY KEY, -- Ex: P, M, G, 38, 40
+CREATE TABLE IF NOT EXISTS tamanho (
+    cod_tamanho VARCHAR(10) PRIMARY KEY,
     descricao_tamanho VARCHAR(50)
 );
-
 
 -- ==============================================================================
 -- 2. TABELAS DE LIGAÇÃO E DEPENDENTES (Com chaves estrangeiras)
 -- ==============================================================================
 
-CREATE TABLE roteiro_padrao_fase (
+CREATE TABLE IF NOT EXISTS roteiro_padrao_fase (
     cod_roteiro INT NOT NULL,
     cod_fase INT NOT NULL,
     sequencia INT NOT NULL,
@@ -55,7 +54,7 @@ CREATE TABLE roteiro_padrao_fase (
     CONSTRAINT fk_fase FOREIGN KEY (cod_fase) REFERENCES fase(cod_fase) ON DELETE RESTRICT
 );
 
-CREATE TABLE mov_usuario (
+CREATE TABLE IF NOT EXISTS mov_usuario (
     cod_fase INT NOT NULL,
     cod_usuario INT NOT NULL,
     PRIMARY KEY (cod_fase, cod_usuario),
@@ -63,10 +62,10 @@ CREATE TABLE mov_usuario (
     CONSTRAINT fk_mov_usuario FOREIGN KEY (cod_usuario) REFERENCES usuario(cod_usuario) ON DELETE CASCADE
 );
 
-CREATE TABLE ordem_producao (
-    cod_op VARCHAR(50) NOT NULL, -- Digitado pelo usuário
+CREATE TABLE IF NOT EXISTS ordem_producao (
+    cod_op VARCHAR(50) NOT NULL,
     cod_cliente UUID NOT NULL,
-    id_op_cliente VARCHAR(100) UNIQUE, -- Concatenado via Trigger
+    id_op_cliente VARCHAR(100) UNIQUE,
     descricao_op TEXT,
     cod_roteiro INT NOT NULL,
     valor_unitario NUMERIC(10, 2) DEFAULT 0.00,
@@ -80,7 +79,7 @@ CREATE TABLE ordem_producao (
     CONSTRAINT fk_op_usuario FOREIGN KEY (usuario_geracao) REFERENCES usuario(cod_usuario) ON DELETE RESTRICT
 );
 
-CREATE TABLE grade_op (
+CREATE TABLE IF NOT EXISTS grade_op (
     cod_op VARCHAR(50) NOT NULL,
     cod_tamanho VARCHAR(10) NOT NULL,
     quantidade_qual_1 INT DEFAULT 0,
@@ -91,8 +90,8 @@ CREATE TABLE grade_op (
     CONSTRAINT fk_grade_tam FOREIGN KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
 );
 
-CREATE TABLE mov_fase (
-    id_movimento SERIAL PRIMARY KEY, -- Adicionada PK auxiliar para o histórico
+CREATE TABLE IF NOT EXISTS mov_fase (
+    id_movimento SERIAL PRIMARY KEY,
     cod_op VARCHAR(50) NOT NULL,
     cod_fase INT NOT NULL,
     cod_usuario INT NOT NULL,
@@ -102,8 +101,8 @@ CREATE TABLE mov_fase (
     CONSTRAINT fk_movfase_usuario FOREIGN KEY (cod_usuario) REFERENCES usuario(cod_usuario) ON DELETE RESTRICT
 );
 
-CREATE TABLE mov_fase_tam (
-    id_mov_fase_tam SERIAL PRIMARY KEY, -- Adicionada PK auxiliar
+CREATE TABLE IF NOT EXISTS mov_fase_tam (
+    id_mov_fase_tam SERIAL PRIMARY KEY,
     cod_op VARCHAR(50) NOT NULL,
     cod_fase INT NOT NULL,
     cod_tamanho VARCHAR(10) NOT NULL,
@@ -119,18 +118,19 @@ CREATE TABLE mov_fase_tam (
 -- 3. TRIGGERS E FUNÇÕES
 -- ==============================================================================
 
--- Função para concatenar op + cliente
+-- Função para concatenar op + cliente (O OR REPLACE já garante que não dará erro se existir)
 CREATE OR REPLACE FUNCTION func_gerar_id_op_cliente()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Concatena o cod_op (digitado) com o cod_cliente (UUID).
-    -- Exemplo de saída: 'OP123-550e8400-e29b-41d4-a716-446655440000'
     NEW.id_op_cliente := NEW.cod_op || '-' || NEW.cod_cliente;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger disparada ANTES de inserir ou atualizar na tabela OrdemProducao
+-- Remove a trigger se ela já existir para poder recriá-la com segurança
+DROP TRIGGER IF EXISTS trg_gerar_id_op_cliente ON ordem_producao;
+
+-- Cria a Trigger
 CREATE TRIGGER trg_gerar_id_op_cliente
 BEFORE INSERT OR UPDATE ON ordem_producao
 FOR EACH ROW
