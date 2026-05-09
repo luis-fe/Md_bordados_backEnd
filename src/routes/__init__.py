@@ -1,5 +1,6 @@
 # routes/__init__.py
 
+
 # Importa os blueprints de cada arquivo de rotas
 from .cliente_routes import cliente_bp
 
