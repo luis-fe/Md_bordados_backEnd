@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify
 from src.services.cliente_service import ServiceCliente
 
+
 # Criando o Blueprint para Clientes
 cliente_bp = Blueprint('cliente_bp', __name__)
 
