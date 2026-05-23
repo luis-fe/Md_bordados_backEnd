@@ -29,7 +29,10 @@ class Usuario:
     def cadastrarUsuario(self, nome_usuario, login, senha, contato, status="ativo"):
         senha_criptografada = self._criptografar_senha(senha)
 
-        # Adicionados: login, contato e status
+        # Traduz a string recebida da API para o formato inteiro esperado pelo banco (1 ou 0)
+        # O 'in' garante que se vier 'ativo', '1', ou True, ele salva 1.
+        status_db = 1 if str(status).lower() in ['ativo', '1', 'true'] else 0
+
         query = """
             INSERT INTO usuario (nome_usuario, login, senha, contato, status) 
             VALUES (%s, %s, %s, %s, %s) RETURNING cod_usuario;
@@ -37,7 +40,8 @@ class Usuario:
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status))
+                # Agora passamos o status_db convertido
+                cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status_db))
                 conn.commit()
                 return cursor.fetchone()[0]  # Retorna o ID gerado
         except Exception as e:
@@ -50,6 +54,9 @@ class Usuario:
         """
         Atualiza os dados do usuário. Se uma nova_senha for passada, ela também será atualizada.
         """
+        # Traduz o status para o banco
+        status_db = 1 if str(status).lower() in ['ativo', '1', 'true'] else 0
+
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
@@ -60,7 +67,7 @@ class Usuario:
                         SET nome_usuario = %s, login = %s, senha = %s, contato = %s, status = %s 
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status, cod_usuario))
+                    cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status_db, cod_usuario))
                 else:
                     # Atualiza os dados, mantendo a senha antiga
                     query = """
@@ -68,7 +75,7 @@ class Usuario:
                         SET nome_usuario = %s, login = %s, contato = %s, status = %s 
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, login, contato, status, cod_usuario))
+                    cursor.execute(query, (nome_usuario, login, contato, status_db, cod_usuario))
 
                 conn.commit()
                 return cursor.rowcount > 0
@@ -79,8 +86,16 @@ class Usuario:
             conn.close()
 
     def buscarUsuarios(self):
-        # A listagem agora traz os novos campos, mas continua protegendo a senha
-        query = "SELECT cod_usuario, nome_usuario, login, contato, status FROM usuario;"
+        # O CASE WHEN faz com que o banco de dados já devolva a string 'ativo' ou 'inativo'
+        # ao invés de devolver os números 1 ou 0.
+        query = """
+            SELECT cod_usuario, 
+                   nome_usuario, 
+                   login, 
+                   contato, 
+                   CASE WHEN status = 1 THEN 'ativo' ELSE 'inativo' END as status
+            FROM usuario;
+        """
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
