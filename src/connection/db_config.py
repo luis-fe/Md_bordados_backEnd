@@ -16,7 +16,7 @@ def get_db_connection():
             database=os.getenv("DB_NAME", "nome_do_seu_banco"),
             user=os.getenv("DB_USER", "postgres"),
             password=os.getenv("DB_PASSWORD", "sua_senha"),
-            port=os.getenv("DB_PORT", "5432")
+            port=os.getenv("PORT", "5432")
         )
         return conn
     except psycopg2.Error as e:
