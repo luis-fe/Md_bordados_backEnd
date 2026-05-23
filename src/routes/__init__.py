@@ -15,6 +15,6 @@ def init_routes(app):
     app.register_blueprint(cliente_bp, url_prefix='/api')
     
     # Futuros registros:
-    # app.register_blueprint(usuario_bp, url_prefix='/api')
+    app.register_blueprint(usuario_bp, url_prefix='/api')
     # app.register_blueprint(fase_bp, url_prefix='/api')
     # app.register_blueprint(roteiro_bp, url_prefix='/api')
