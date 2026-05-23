@@ -33,12 +33,17 @@ CREATE TABLE IF NOT EXISTS roteiro_padrao (
 
 CREATE TABLE IF NOT EXISTS usuario (
     cod_usuario SERIAL PRIMARY KEY,
-    nome_usuario VARCHAR(100) NOT NULL
+    nome_usuario VARCHAR(100) NOT NULL,
+    login VARCHAR(50) UNIQUE,        -- Adicionado para compatibilidade com o PHP
+    perfil VARCHAR(30),              -- Adicionado para compatibilidade com o PHP
+    status INT DEFAULT 1,            -- Nova coluna: 1 Ativo, 0 Inativo
+    contato VARCHAR(20)              -- Nova coluna: Contato do usuário
 );
 
 CREATE TABLE IF NOT EXISTS tamanho (
     cod_tamanho VARCHAR(10) PRIMARY KEY,
-    descricao_tamanho VARCHAR(50)
+    descricao_tamanho VARCHAR(50),
+    "sequenciaTamanho" INT           -- Nova coluna (com aspas devido à letra maiúscula)
 );
 
 -- ==============================================================================
@@ -135,3 +140,16 @@ CREATE TRIGGER trg_gerar_id_op_cliente
 BEFORE INSERT OR UPDATE ON ordem_producao
 FOR EACH ROW
 EXECUTE FUNCTION func_gerar_id_op_cliente();
+
+-- ==============================================================================
+-- 4. ATUALIZAÇÕES DE COLUNAS (Para tabelas que já existem)
+-- ==============================================================================
+
+-- Atualiza a tabela de tamanhos
+ALTER TABLE tamanho ADD COLUMN IF NOT EXISTS "sequenciaTamanho" INT;
+
+-- Atualiza a tabela de usuários
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS login VARCHAR(50) UNIQUE;
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS perfil VARCHAR(30);
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS status INT DEFAULT 1;
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS contato VARCHAR(20);
