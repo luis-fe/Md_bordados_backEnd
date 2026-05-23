@@ -12,11 +12,11 @@ def get_db_connection():
     """
     try:
         conn = psycopg2.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            database=os.getenv("DB_NAME", "nome_do_seu_banco"),
-            user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD", "sua_senha"),
-            port=os.getenv("PORT", "5432")
+            host=os.getenv("db_host", "localhost"),
+            database=os.getenv("db_name", "nome_do_seu_banco"),
+            user=os.getenv("POSTGRES_USER", "postgres"),
+            password=os.getenv("db_password", "sua_senha"),
+            port=os.getenv("db_port", "5432")
         )
         return conn
     except psycopg2.Error as e:
