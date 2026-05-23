@@ -9,15 +9,13 @@ class Usuario:
     def __init__(self):
         pass
 
-    # --- NOVOS MÉTODOS DE SEGURANÇA ---
+    # --- MÉTODOS DE SEGURANÇA ---
 
     def _criptografar_senha(self, senha_plana):
         """Recebe a senha em texto plano e retorna o hash criptografado."""
-        # O bcrypt exige que a senha seja convertida para bytes
         bytes_senha = senha_plana.encode('utf-8')
         salt = bcrypt.gensalt()
         hash_senha = bcrypt.hashpw(bytes_senha, salt)
-        # Decodifica de volta para string para salvar no banco de dados (VARCHAR)
         return hash_senha.decode('utf-8')
 
     def verificar_senha(self, senha_plana, senha_hash):
@@ -28,30 +26,29 @@ class Usuario:
 
     # --- MÉTODOS DE BANCO DE DADOS ATUALIZADOS ---
 
-    def cadastrarUsuario(self, nome_usuario, senha):
+    def cadastrarUsuario(self, nome_usuario, login, senha, contato, status="ativo"):
         senha_criptografada = self._criptografar_senha(senha)
 
-        # Atualizado para inserir a senha no banco
+        # Adicionados: login, contato e status
         query = """
-            INSERT INTO usuario (nome_usuario, senha) 
-            VALUES (%s, %s) RETURNING cod_usuario;
+            INSERT INTO usuario (nome_usuario, login, senha, contato, status) 
+            VALUES (%s, %s, %s, %s, %s) RETURNING cod_usuario;
         """
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute(query, (nome_usuario, senha_criptografada))
+                cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status))
                 conn.commit()
-                return cursor.fetchone()[0]  # Retorna o ID (cod_usuario) gerado
+                return cursor.fetchone()[0]  # Retorna o ID gerado
         except Exception as e:
-            conn.rollback()  # Em caso de erro, desfaz a transação
+            conn.rollback()
             raise e
         finally:
-            conn.close()  # Garante que a conexão será fechada
+            conn.close()
 
-    def editarUsuario(self, cod_usuario, nome_usuario, nova_senha=None):
+    def editarUsuario(self, cod_usuario, nome_usuario, login, contato, status, nova_senha=None):
         """
-        Atualiza o nome do usuário. Se uma nova_senha for passada,
-        ela também será criptografada e atualizada.
+        Atualiza os dados do usuário. Se uma nova_senha for passada, ela também será atualizada.
         """
         conn = db_config.get_db_connection()
         try:
@@ -60,18 +57,18 @@ class Usuario:
                     senha_criptografada = self._criptografar_senha(nova_senha)
                     query = """
                         UPDATE usuario 
-                        SET nome_usuario = %s, senha = %s 
+                        SET nome_usuario = %s, login = %s, senha = %s, contato = %s, status = %s 
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, senha_criptografada, cod_usuario))
+                    cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status, cod_usuario))
                 else:
-                    # Se não passou senha nova, atualiza apenas o nome
+                    # Atualiza os dados, mantendo a senha antiga
                     query = """
                         UPDATE usuario 
-                        SET nome_usuario = %s 
+                        SET nome_usuario = %s, login = %s, contato = %s, status = %s 
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, cod_usuario))
+                    cursor.execute(query, (nome_usuario, login, contato, status, cod_usuario))
 
                 conn.commit()
                 return cursor.rowcount > 0
@@ -82,8 +79,8 @@ class Usuario:
             conn.close()
 
     def buscarUsuarios(self):
-        # É uma boa prática NÃO retornar as senhas (mesmo em hash) numa listagem geral
-        query = "SELECT cod_usuario, nome_usuario FROM usuario;"
+        # A listagem agora traz os novos campos, mas continua protegendo a senha
+        query = "SELECT cod_usuario, nome_usuario, login, contato, status FROM usuario;"
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:

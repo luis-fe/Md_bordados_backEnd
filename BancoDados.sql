@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS usuario (
     login VARCHAR(50) UNIQUE,        -- Adicionado para compatibilidade com o PHP
     perfil VARCHAR(30),              -- Adicionado para compatibilidade com o PHP
     status INT DEFAULT 1,            -- Nova coluna: 1 Ativo, 0 Inativo
-    contato VARCHAR(20)              -- Nova coluna: Contato do usuário
+    contato VARCHAR(20)  ,            -- Nova coluna: Contato do usuário
+    senha VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS tamanho (
@@ -153,3 +154,4 @@ ALTER TABLE usuario ADD COLUMN IF NOT EXISTS login VARCHAR(50) UNIQUE;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS perfil VARCHAR(30);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS status INT DEFAULT 1;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS contato VARCHAR(20);
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(50);

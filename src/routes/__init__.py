@@ -3,11 +3,8 @@
 
 # Importa os blueprints de cada arquivo de rotas
 from .cliente_routes import cliente_bp
+from .usuario_routes import usuario_bp
 
-# Conforme você criar as outras rotas, você vai importá-las aqui:
-# from .usuario_routes import usuario_bp
-# from .fase_routes import fase_bp
-# from .roteiro_routes import roteiro_bp
 
 def init_routes(app):
     """
