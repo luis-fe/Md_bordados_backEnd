@@ -47,7 +47,6 @@ CREATE TABLE IF NOT EXISTS tamanho (
     "sequenciaTamanho" INT           -- Nova coluna (com aspas devido à letra maiúscula)
 );
 
--- Nova tabela autoriza_rotina (Independente, sem chaves estrangeiras por enquanto)
 CREATE TABLE IF NOT EXISTS autoriza_rotina (
     id_rotina SERIAL PRIMARY KEY,
     rotina TEXT UNIQUE NOT NULL
@@ -56,6 +55,15 @@ CREATE TABLE IF NOT EXISTS autoriza_rotina (
 -- ==============================================================================
 -- 2. TABELAS DE LIGAÇÃO E DEPENDENTES (Com chaves estrangeiras)
 -- ==============================================================================
+
+-- Nova tabela de amarração para permissões de usuários
+CREATE TABLE IF NOT EXISTS usuario_autorizado (
+    cod_usuario INT NOT NULL,
+    id_rotina INT NOT NULL,
+    PRIMARY KEY (cod_usuario, id_rotina),
+    CONSTRAINT fk_autorizado_usuario FOREIGN KEY (cod_usuario) REFERENCES usuario(cod_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_autorizado_rotina FOREIGN KEY (id_rotina) REFERENCES autoriza_rotina(id_rotina) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS roteiro_padrao_fase (
     cod_roteiro INT NOT NULL,
@@ -99,7 +107,7 @@ CREATE TABLE IF NOT EXISTS grade_op (
     quantidade_cancelada INT DEFAULT 0,
     PRIMARY KEY (cod_op, cod_tamanho),
     CONSTRAINT fk_grade_op FOREIGN KEY (cod_op) REFERENCES ordem_producao(cod_op) ON DELETE CASCADE,
-    CONSTRAINT fk_grade_tam FOREIGN KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
+    CONSTRAINT fk_grade_tam KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS mov_fase (
