@@ -47,6 +47,12 @@ CREATE TABLE IF NOT EXISTS tamanho (
     "sequenciaTamanho" INT           -- Nova coluna (com aspas devido à letra maiúscula)
 );
 
+-- Nova tabela autoriza_rotina (Independente, sem chaves estrangeiras por enquanto)
+CREATE TABLE IF NOT EXISTS autoriza_rotina (
+    id_rotina SERIAL PRIMARY KEY,
+    rotina TEXT UNIQUE NOT NULL
+);
+
 -- ==============================================================================
 -- 2. TABELAS DE LIGAÇÃO E DEPENDENTES (Com chaves estrangeiras)
 -- ==============================================================================
@@ -155,3 +161,19 @@ ALTER TABLE usuario ADD COLUMN IF NOT EXISTS perfil VARCHAR(30);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS status INT DEFAULT 1;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS contato VARCHAR(20);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(50);
+
+-- ==============================================================================
+-- 5. CARGA DE DADOS INICIAIS (Valores padrão da tabela autoriza_rotina)
+-- ==============================================================================
+
+INSERT INTO autoriza_rotina (rotina) VALUES
+('cadastro de usuario (inclusao , edicao , exclusao)'),
+('visualizar usuarios cadastrado'),
+('cadastro clientes (inclusao , edicao , exclusao)'),
+('visualizar clientes'),
+('condigurar tamanhos'),
+('configurar fases'),
+('configurar roteiro'),
+('visualizar relatorio producao'),
+('visualizar valor financeiro nas consultas')
+ON CONFLICT (rotina) DO NOTHING;
