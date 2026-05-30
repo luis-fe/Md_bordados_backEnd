@@ -85,6 +85,7 @@ class Usuario:
         finally:
             conn.close()
 
+
     def buscarUsuarios(self):
         # O CASE WHEN faz com que o banco de dados já devolva a string 'ativo' ou 'inativo'
         # ao invés de devolver os números 1 ou 0.
@@ -103,3 +104,20 @@ class Usuario:
                 return cursor.fetchall()
         finally:
             conn.close()
+
+            
+    def buscarUsuarioPorLogin(self, login):
+            """Busca o usuário no banco pelo login para realizar a autenticação."""
+            query = """
+                SELECT cod_usuario, nome_usuario, senha, status 
+                FROM usuario 
+                WHERE login = %s;
+            """
+            conn = db_config.get_db_connection()
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(query, (login,))
+                    # Retorna a tupla (cod_usuario, nome_usuario, senha_hash, status) ou None
+                    return cursor.fetchone()
+            finally:
+                conn.close()

@@ -76,3 +76,19 @@ def put_editarUsuario(id_usuario):
     response, status_code = service.editarUsuario(id_usuario, dados)
 
     return jsonify(response), status_code
+
+@usuario_bp.route('/login', methods=['POST'])
+def post_login():
+    """
+    Endpoint público para autenticação do usuário.
+    Não utiliza o @token_required.
+    """
+    dados = request.get_json()
+    
+    service = ServiceUsuario()
+    response, status_code = service.autenticarUsuario(dados)
+    
+    # Se no futuro você quiser implementar JWT, é aqui dentro do 'response' 
+    # de sucesso que você geraria e devolveria o token dinâmico.
+    
+    return jsonify(response), status_code

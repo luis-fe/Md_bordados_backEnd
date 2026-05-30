@@ -80,3 +80,45 @@ class ServiceUsuario:
 
         except Exception as e:
             return {"status": "error", "message": f"Erro ao atualizar usuário: {str(e)}"}, 500
+        
+
+        
+    def autenticarUsuario(self, dados):
+        if not dados or not dados.get('login') or not dados.get('senha'):
+            return {"status": "error", "message": "Login e senha são obrigatórios."}, 400
+
+        login = dados.get('login')
+        senha_plana = dados.get('senha')
+
+        try:
+            # 1. Busca o usuário no banco
+            usuario_db = self.usuario_model.buscarUsuarioPorLogin(login)
+
+            # Se não encontrou o usuário, retorna erro genérico (boa prática de segurança)
+            if not usuario_db:
+                return {"status": "error", "message": "Usuário ou senha incorretos."}, 401
+
+            cod_usuario, nome_usuario, senha_hash, status_db = usuario_db
+
+            # 2. Verifica se o usuário está ativo (1 = ativo)
+            if status_db != 1:
+                return {"status": "error", "message": "Usuário inativo ou bloqueado."}, 403
+
+            # 3. Verifica se a senha confere
+            senha_valida = self.usuario_model.verificar_senha(senha_plana, senha_hash)
+
+            if senha_valida:
+                return {
+                    "status": "success", 
+                    "message": "Autenticação realizada com sucesso.",
+                    "data": {
+                        "id": cod_usuario,
+                        "nome": nome_usuario,
+                        "login": login
+                    }
+                }, 200
+            else:
+                return {"status": "error", "message": "Usuário ou senha incorretos."}, 401
+
+        except Exception as e:
+            return {"status": "error", "message": f"Erro durante a autenticação: {str(e)}"}, 500
