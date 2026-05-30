@@ -41,6 +41,25 @@ class Tamanho:
         finally:
             conn.close()
 
+
+    def verificarSequenciaExiste(self, sequencia, cod_tamanho_ignorar=None):
+        query = 'SELECT cod_tamanho FROM tamanho WHERE "sequenciaTamanho" = %s'
+        params = [sequencia]
+        
+        # Se for uma edição, precisamos ignorar o código do próprio tamanho que estamos editando
+        if cod_tamanho_ignorar:
+            query += " AND cod_tamanho != %s"
+            params.append(cod_tamanho_ignorar)
+            
+        conn = db_config.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(query, tuple(params))
+                # Retorna True se encontrou alguém usando essa sequência
+                return cursor.fetchone() is not None 
+        finally:
+            conn.close()
+
     def editarTamanho(self, cod_tamanho, descricao_tamanho, sequencia_tamanho):
         query = """
             UPDATE tamanho 
