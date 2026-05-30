@@ -26,9 +26,15 @@ class ServiceTamanho:
             return {"status": "error", "message": f"Erro ao listar tamanhos: {str(e)}"}, 500
 
     def inclusaoTamanho(self, dados):
-        # Validação básica: código do tamanho é a chave primária e, portanto, obrigatório
         if not dados or not dados.get('cod_tamanho'):
             return {"status": "error", "message": "O código do tamanho (cod_tamanho) é obrigatório."}, 400
+
+        # --- CÓDIGO NOVO: BLOQUEIA SEQUÊNCIA REPETIDA ---
+        sequencia = dados.get('sequenciaTamanho')
+        if sequencia and self.tamanho_model.verificarSequenciaExiste(sequencia):
+            return {"status": "error", "message": f"A sequência {sequencia} já está em uso por outro tamanho na grade."}, 400
+        # ------------------------------------------------
+
 
         try:
             novo_cod = self.tamanho_model.cadastrarTamanho(
@@ -46,6 +52,12 @@ class ServiceTamanho:
     def editarTamanho(self, cod_tamanho, dados):
         if not dados:
             return {"status": "error", "message": "Nenhum dado fornecido para atualização."}, 400
+
+        # --- CÓDIGO NOVO: BLOQUEIA SEQUÊNCIA REPETIDA NA EDIÇÃO ---
+        sequencia = dados.get('sequenciaTamanho')
+        if sequencia and self.tamanho_model.verificarSequenciaExiste(sequencia, cod_tamanho_ignorar=cod_tamanho):
+            return {"status": "error", "message": f"A sequência {sequencia} já está em uso por outro tamanho."}, 400
+        # ----------------------------------------------------------
 
         try:
             sucesso = self.tamanho_model.editarTamanho(
