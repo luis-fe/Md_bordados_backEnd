@@ -4,6 +4,7 @@
 # Importa os blueprints de cada arquivo de rotas
 from .cliente_routes import cliente_bp
 from .usuario_routes import usuario_bp
+from .tamanho_routes import tamanho_bp
 
 
 def init_routes(app):
@@ -16,5 +17,7 @@ def init_routes(app):
     
     # Futuros registros:
     app.register_blueprint(usuario_bp, url_prefix='/api')
+    app.register_blueprint(tamanho_bp, url_prefix='/api')
+
     # app.register_blueprint(fase_bp, url_prefix='/api')
     # app.register_blueprint(roteiro_bp, url_prefix='/api')
