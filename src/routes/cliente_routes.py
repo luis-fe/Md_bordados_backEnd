@@ -63,12 +63,11 @@ def post_novoCliente():
     try:
         # Captura o JSON enviado no corpo da requisição (front-end -> back-end)
         dados = request.get_json()
-        print(dados)
 
         service = ServiceCliente()
         response, status_code = service.inclusaoCliente(dados)
 
-        return jsonify(response), status_code
+        return jsonify(response)
 
     except Exception as e:
         # --- EXIBE O ERRO NO CONSOLE ---
