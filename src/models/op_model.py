@@ -33,18 +33,25 @@ class OrdemProducao:
             conn.close()
 
     def buscarTodasOPs(self):
-        # Utiliza INNER JOIN para trazer os nomes em vez de apenas os IDs, facilitando o Front-end
         query = """
             SELECT 
                 op.cod_op, op.id_op_cliente, op.descricao_op, 
                 op.valor_unitario, op.data_previsao, op.data_criacao, op.status_op,
                 c.id AS cod_cliente, c.razao_social, 
                 r.cod_roteiro, r.descricao_roteiro, 
-                u.cod_usuario, u.nome_usuario
+                u.cod_usuario, u.nome_usuario,
+                COALESCE(SUM(g.quantidade_qual_1), 0) AS qtde_pecas
             FROM ordem_producao op
             INNER JOIN clientes c ON op.cod_cliente = c.id
             INNER JOIN roteiro_padrao r ON op.cod_roteiro = r.cod_roteiro
             INNER JOIN usuario u ON op.usuario_geracao = u.cod_usuario
+            LEFT JOIN grade_op g ON op.cod_op = g.cod_op
+            GROUP BY 
+                op.cod_op, op.id_op_cliente, op.descricao_op, 
+                op.valor_unitario, op.data_previsao, op.data_criacao, op.status_op,
+                c.id, c.razao_social, 
+                r.cod_roteiro, r.descricao_roteiro, 
+                u.cod_usuario, u.nome_usuario
             ORDER BY op.data_criacao DESC;
         """
         conn = db_config.get_db_connection()
@@ -62,12 +69,20 @@ class OrdemProducao:
                 op.valor_unitario, op.data_previsao, op.data_criacao, op.status_op,
                 c.id AS cod_cliente, c.razao_social, 
                 r.cod_roteiro, r.descricao_roteiro, 
-                u.cod_usuario, u.nome_usuario
+                u.cod_usuario, u.nome_usuario,
+                COALESCE(SUM(g.quantidade_qual_1), 0) AS qtde_pecas
             FROM ordem_producao op
             INNER JOIN clientes c ON op.cod_cliente = c.id
             INNER JOIN roteiro_padrao r ON op.cod_roteiro = r.cod_roteiro
             INNER JOIN usuario u ON op.usuario_geracao = u.cod_usuario
-            WHERE op.cod_op = %s;
+            LEFT JOIN grade_op g ON op.cod_op = g.cod_op
+            WHERE op.cod_op = %s
+            GROUP BY 
+                op.cod_op, op.id_op_cliente, op.descricao_op, 
+                op.valor_unitario, op.data_previsao, op.data_criacao, op.status_op,
+                c.id, c.razao_social, 
+                r.cod_roteiro, r.descricao_roteiro, 
+                u.cod_usuario, u.nome_usuario;
         """
         conn = db_config.get_db_connection()
         try:
