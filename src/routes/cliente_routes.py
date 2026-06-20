@@ -1,5 +1,5 @@
 # routes/cliente_routes.py
-
+import traceback # Útil para ver a linha exata do erro
 import os
 from functools import wraps
 from flask import Blueprint, request, jsonify
@@ -60,13 +60,26 @@ def getCliente():
 @cliente_bp.route('/clientes', methods=['POST'])
 @token_required  # <--- Adicionando a proteção aqui
 def post_novoCliente():
-    # Captura o JSON enviado no corpo da requisição (front-end -> back-end)
-    dados = request.get_json()
+    try:
+        # Captura o JSON enviado no corpo da requisição (front-end -> back-end)
+        dados = request.get_json()
 
-    service = ServiceCliente()
-    response, status_code = service.inclusaoCliente(dados)
+        service = ServiceCliente()
+        response, status_code = service.inclusaoCliente(dados)
 
-    return jsonify(response), status_code
+        return jsonify(response), status_code
+
+    except Exception as e:
+        # --- EXIBE O ERRO NO CONSOLE ---
+        print(f"❌ Erro na rota /clientes (POST): {str(e)}")
+
+        # Opcional: Se quiser ver o "caminho" completo do erro (stack trace) no console:
+        traceback.print_exc()
+
+        # Retorna uma mensagem de erro controlada para o front-end
+        return jsonify({
+            "erro": "Ocorreu um erro interno no servidor ao tentar cadastrar o cliente."
+        }), 500
 
 
 @cliente_bp.route('/clientes/<string:id_cliente>', methods=['PUT'])
