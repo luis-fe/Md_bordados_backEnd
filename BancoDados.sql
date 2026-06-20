@@ -103,12 +103,13 @@ CREATE TABLE IF NOT EXISTS ordem_producao (
 CREATE TABLE IF NOT EXISTS grade_op (
     cod_op VARCHAR(50) NOT NULL,
     cod_tamanho VARCHAR(10) NOT NULL,
+    cor VARCHAR(50) NOT NULL DEFAULT 'Sem Cor', -- Coluna adicionada para suporte a Grade/Cor
     quantidade_qual_1 INT DEFAULT 0,
     quantidade_qual_2 INT DEFAULT 0,
     quantidade_cancelada INT DEFAULT 0,
-    PRIMARY KEY (cod_op, cod_tamanho),
+    PRIMARY KEY (cod_op, cod_tamanho, cor),     -- Atualizado para incluir a cor na chave primária
     CONSTRAINT fk_grade_op FOREIGN KEY (cod_op) REFERENCES ordem_producao(cod_op) ON DELETE CASCADE,
-    CONSTRAINT fk_grade_tam KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
+    CONSTRAINT fk_grade_tam FOREIGN KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS mov_fase (
@@ -173,6 +174,9 @@ ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(50);
 
 -- Atualiza a tabela de roteiro_padrao_fase
 ALTER TABLE roteiro_padrao_fase ADD COLUMN IF NOT EXISTS "faseSimultanea" VARCHAR(50);
+
+-- Atualiza a tabela de grade_op para adicionar a coluna cor se ela não existir
+ALTER TABLE grade_op ADD COLUMN IF NOT EXISTS cor VARCHAR(50) NOT NULL DEFAULT 'Sem Cor';
 
 -- ==============================================================================
 -- 5. CARGA DE DADOS INICIAIS (Valores padrão da tabela autoriza_rotina)
