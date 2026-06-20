@@ -27,7 +27,9 @@ class ServiceOrdemProducao:
             "usuario": {
                 "cod_usuario": row[11],
                 "nome_usuario": row[12]
-            }
+            },
+            # Nova linha mapeando a coluna gerada pelo GROUP BY do banco
+            "qtde_pecas": int(row[13]) if row[13] else 0
         }
 
     def listaOPs(self):
