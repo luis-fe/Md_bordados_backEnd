@@ -7,7 +7,7 @@ from .usuario_routes import usuario_bp
 from .tamanho_routes import tamanho_bp
 from .fase_routes import fase_bp
 from .roteiro_routes import roteiro_bp
-
+from .roteiro_fase_routes import roteiro_fase_bp
 
 def init_routes(app):
     """
@@ -22,6 +22,7 @@ def init_routes(app):
     app.register_blueprint(tamanho_bp, url_prefix='/api')
     app.register_blueprint(roteiro_bp, url_prefix='/api')
     app.register_blueprint(fase_bp, url_prefix='/api')
+    app.register_blueprint(roteiro_fase_bp, url_prefix='/api')
 
     # app.register_blueprint(fase_bp, url_prefix='/api')
     # app.register_blueprint(roteiro_bp, url_prefix='/api')
