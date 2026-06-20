@@ -79,7 +79,7 @@ def post_novoCliente():
         # Retorna uma mensagem de erro controlada para o front-end
         return jsonify({
             "erro": "Ocorreu um erro interno no servidor ao tentar cadastrar o cliente."
-        }), 500
+        })
 
 
 @cliente_bp.route('/clientes/<string:id_cliente>', methods=['PUT'])
