@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     login VARCHAR(50) UNIQUE,        -- Adicionado para compatibilidade com o PHP
     perfil VARCHAR(30),              -- Adicionado para compatibilidade com o PHP
     status INT DEFAULT 1,            -- Nova coluna: 1 Ativo, 0 Inativo
-    contato VARCHAR(20)  ,            -- Nova coluna: Contato do usuário
+    contato VARCHAR(20)  ,           -- Nova coluna: Contato do usuário
     senha VARCHAR(50)
 );
 
@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS roteiro_padrao_fase (
     cod_roteiro INT NOT NULL,
     cod_fase INT NOT NULL,
     sequencia INT NOT NULL,
+    "faseSimultanea" VARCHAR(50),    -- Nova coluna adicionada
     PRIMARY KEY (cod_roteiro, cod_fase),
     CONSTRAINT fk_roteiro FOREIGN KEY (cod_roteiro) REFERENCES roteiro_padrao(cod_roteiro) ON DELETE CASCADE,
     CONSTRAINT fk_fase FOREIGN KEY (cod_fase) REFERENCES fase(cod_fase) ON DELETE RESTRICT
@@ -169,6 +170,9 @@ ALTER TABLE usuario ADD COLUMN IF NOT EXISTS perfil VARCHAR(30);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS status INT DEFAULT 1;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS contato VARCHAR(20);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(50);
+
+-- Atualiza a tabela de roteiro_padrao_fase
+ALTER TABLE roteiro_padrao_fase ADD COLUMN IF NOT EXISTS "faseSimultanea" VARCHAR(50);
 
 -- ==============================================================================
 -- 5. CARGA DE DADOS INICIAIS (Valores padrão da tabela autoriza_rotina)
