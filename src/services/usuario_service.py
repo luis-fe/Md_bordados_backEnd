@@ -1,5 +1,3 @@
-# services/usuario_service.py
-
 from src.models.usuario_model import Usuario
 
 
@@ -19,7 +17,8 @@ class ServiceUsuario:
                     "nome_usuario": row[1],
                     "login": row[2],
                     "contato": row[3],
-                    "status": row[4]
+                    "status": row[4],
+                    "corTema": row[5]  # Adicionado corTema
                 })
 
             return {"status": "success", "data": usuarios_lista}, 200
@@ -35,13 +34,16 @@ class ServiceUsuario:
         try:
             # Se o status não for enviado no JSON, assume 'ativo' como padrão
             status_usuario = dados.get('status', 'ativo')
+            # Se a corTema não for enviada, assume 'Branca' como padrão
+            cor_tema_usuario = dados.get('corTema', 'Branca')
 
             novo_id = self.usuario_model.cadastrarUsuario(
                 nome_usuario=dados.get('nome_usuario'),
                 login=dados.get('login'),
                 senha=dados.get('senha'),
                 contato=dados.get('contato'),
-                status=status_usuario
+                status=status_usuario,
+                corTema=cor_tema_usuario  # Adicionado corTema
             )
 
             return {"status": "success", "message": "Usuário cadastrado com sucesso", "id": novo_id}, 201
@@ -63,6 +65,9 @@ class ServiceUsuario:
             nova_senha = dados.get('senha')
             if nova_senha and nova_senha.strip() == "":
                 nova_senha = None  # Evita salvar uma senha em branco se o front-end mandar uma string vazia
+                
+            # Define o padrão 'Branca' caso não seja enviado no update
+            cor_tema_usuario = dados.get('corTema', 'Branca')
 
             sucesso = self.usuario_model.editarUsuario(
                 cod_usuario=id_usuario,
@@ -70,6 +75,7 @@ class ServiceUsuario:
                 login=dados.get('login'),
                 contato=dados.get('contato'),
                 status=dados.get('status'),
+                corTema=cor_tema_usuario,  # Adicionado corTema
                 nova_senha=nova_senha
             )
 
@@ -81,7 +87,6 @@ class ServiceUsuario:
         except Exception as e:
             return {"status": "error", "message": f"Erro ao atualizar usuário: {str(e)}"}, 500
         
-
         
     def autenticarUsuario(self, dados):
         if not dados or not dados.get('login') or not dados.get('senha'):
@@ -98,7 +103,8 @@ class ServiceUsuario:
             if not usuario_db:
                 return {"status": "error", "message": "Usuário ou senha incorretos."}, 401
 
-            cod_usuario, nome_usuario, senha_hash, status_db = usuario_db
+            # Desempacota a tupla retornada, agora incluindo o corTema
+            cod_usuario, nome_usuario, senha_hash, status_db, corTema = usuario_db
 
             # 2. Verifica se o usuário está ativo (1 = ativo)
             if status_db != 1:
@@ -114,7 +120,8 @@ class ServiceUsuario:
                     "data": {
                         "id": cod_usuario,
                         "nome": nome_usuario,
-                        "login": login
+                        "login": login,
+                        "corTema": corTema  # O Front-end agora recebe o tema no login
                     }
                 }, 200
             else:
