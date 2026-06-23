@@ -30,10 +30,12 @@ class ServiceGradeOp:
 
     def inclusaoGradeOp(self, dados):
         if not dados or not dados.get('cod_op') or not dados.get('cod_tamanho'):
+            print('status": "error", "message": "Os campos cod_op e cod_tamanho são obrigatórios.')
             return {"status": "error", "message": "Os campos cod_op e cod_tamanho são obrigatórios."}, 400
 
         try:
             # Garante o fallback do banco se o campo 'cor' não for enviado
+            print('passou pela filtragem 1')
             cor_definida = dados.get('cor', 'Sem Cor')
             if not cor_definida:
                 cor_definida = 'Sem Cor'
