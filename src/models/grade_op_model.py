@@ -20,6 +20,7 @@ class GradeOp:
                 conn.commit()
                 return cursor.rowcount > 0
         except Exception as e:
+            print(e)
             conn.rollback()
             raise e
         finally:
