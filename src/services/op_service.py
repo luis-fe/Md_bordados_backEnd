@@ -72,6 +72,7 @@ class ServiceOrdemProducao:
             return {"status": "success", "message": "Ordem de Produção gerada com sucesso", "cod_op": nova_op}, 201
 
         except Exception as e:
+            print(e)
             if "unique constraint" in str(e).lower() and "cod_op" in str(e).lower():
                 return {"status": "error", "message": "Já existe uma OP com este código."}, 409
             return {"status": "error", "message": f"Erro ao gerar OP: {str(e)}"}, 500
