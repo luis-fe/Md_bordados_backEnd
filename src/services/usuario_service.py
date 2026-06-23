@@ -66,8 +66,6 @@ class ServiceUsuario:
             if nova_senha and nova_senha.strip() == "":
                 nova_senha = None  # Evita salvar uma senha em branco se o front-end mandar uma string vazia
                 
-            # Define o padrão 'Branca' caso não seja enviado no update
-            cor_tema_usuario = dados.get('corTema', 'Branca')
 
             sucesso = self.usuario_model.editarUsuario(
                 cod_usuario=id_usuario,
@@ -75,7 +73,6 @@ class ServiceUsuario:
                 login=dados.get('login'),
                 contato=dados.get('contato'),
                 status=dados.get('status'),
-                corTema=cor_tema_usuario,  # Adicionado corTema
                 nova_senha=nova_senha
             )
 
@@ -129,3 +126,21 @@ class ServiceUsuario:
 
         except Exception as e:
             return {"status": "error", "message": f"Erro durante a autenticação: {str(e)}"}, 500
+
+    def atualizarCorTema(self, id_usuario, dados):
+        if not dados or 'corTema' not in dados:
+            return {"status": "error", "message": "O campo 'corTema' é obrigatório."}, 400
+
+        try:
+            sucesso = self.usuario_model.atualizar_cor_tema(
+                corTema=dados.get('corTema'),
+                cod_usuario=id_usuario
+            )
+
+            if sucesso:
+                return {"status": "success", "message": "Tema atualizado com sucesso."}, 200
+            else:
+                return {"status": "error", "message": "Usuário não encontrado."}, 404
+
+        except Exception as e:
+            return {"status": "error", "message": f"Erro ao atualizar tema do usuário: {str(e)}"}, 500

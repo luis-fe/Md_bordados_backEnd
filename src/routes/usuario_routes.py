@@ -92,3 +92,18 @@ def post_login():
     # de sucesso que você geraria e devolveria o token dinâmico.
     
     return jsonify(response), status_code
+
+
+@usuario_bp.route('/usuarios/<int:id_usuario>/tema', methods=['PATCH'])
+@token_required
+def patch_atualizarCorTema(id_usuario):
+    """
+    Endpoint dedicado para atualizar apenas a cor do tema do usuário.
+    """
+    # Captura o JSON enviado no corpo da requisição (espera algo como {"corTema": "Escura"})
+    dados = request.get_json()
+
+    service = ServiceUsuario()
+    response, status_code = service.atualizarCorTema(id_usuario, dados)
+
+    return jsonify(response), status_code

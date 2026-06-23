@@ -48,7 +48,7 @@ class Usuario:
         finally:
             conn.close()
 
-    def editarUsuario(self, cod_usuario, nome_usuario, login, contato, status, corTema, nova_senha=None):
+    def editarUsuario(self, cod_usuario, nome_usuario, login, contato, status, nova_senha=None):
         """
         Atualiza os dados do usuário. Se uma nova_senha for passada, ela também será atualizada.
         """
@@ -62,18 +62,20 @@ class Usuario:
                     senha_criptografada = self._criptografar_senha(nova_senha)
                     query = """
                         UPDATE usuario 
-                        SET nome_usuario = %s, login = %s, senha = %s, contato = %s, status = %s, "corTema" = %s 
+                        SET nome_usuario = %s, login = %s, senha = %s, contato = %s, status = %s
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status_db, corTema, cod_usuario))
+                    # CORREÇÃO: Remoção da variável 'corTema' da tupla
+                    cursor.execute(query, (nome_usuario, login, senha_criptografada, contato, status_db, cod_usuario))
                 else:
                     # Atualiza os dados, mantendo a senha antiga
                     query = """
                         UPDATE usuario 
-                        SET nome_usuario = %s, login = %s, contato = %s, status = %s, "corTema" = %s 
+                        SET nome_usuario = %s, login = %s, contato = %s, status = %s
                         WHERE cod_usuario = %s;
                     """
-                    cursor.execute(query, (nome_usuario, login, contato, status_db, corTema, cod_usuario))
+                    # CORREÇÃO: Remoção da variável 'corTema' da tupla
+                    cursor.execute(query, (nome_usuario, login, contato, status_db, cod_usuario))
 
                 conn.commit()
                 return cursor.rowcount > 0
@@ -82,7 +84,6 @@ class Usuario:
             raise e
         finally:
             conn.close()
-
 
     def buscarUsuarios(self):
         # O CASE WHEN faz com que o banco de dados já devolva a string 'ativo' ou 'inativo'
@@ -121,3 +122,29 @@ class Usuario:
                     return cursor.fetchone()
             finally:
                 conn.close()
+
+
+    def atualizar_cor_tema(self, corTema, cod_usuario):
+
+        conn = db_config.get_db_connection()
+
+        try:
+            with conn.cursor() as cursor:
+
+                    # Atualiza os dados, mantendo a senha antiga
+                query = """
+                        UPDATE usuario 
+                        SET "corTema" = %s
+                        WHERE cod_usuario = %s;
+                    """
+                cursor.execute(query, ( corTema, cod_usuario))
+
+                conn.commit()
+                return cursor.rowcount > 0
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+
