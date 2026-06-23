@@ -45,7 +45,7 @@ def post_novaLinhaGrade():
     dados = request.get_json()
     service = ServiceGradeOp()
     response, status_code = service.inclusaoGradeOp(dados)
-    return jsonify(response), status_code
+    return jsonify(response)
 
 
 @grade_op_bp.route('/ops/<string:cod_op>/grade/<string:cod_tamanho>/<string:cor>', methods=['PUT'])
