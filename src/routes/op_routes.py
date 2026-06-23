@@ -57,7 +57,7 @@ def post_novaOp():
     service = ServiceOrdemProducao()
     response, status_code = service.inclusaoOP(dados)
 
-    return jsonify(response), status_code
+    return jsonify(response)
 
 
 @op_bp.route('/ops/<string:cod_op>', methods=['PUT'])
