@@ -17,10 +17,13 @@ class ServiceMovUsuario:
                     "cod_fase": row[3],
                     "descricao_fase": row[4]
                 })
+                
 
             return {"status": "success", "data": mov_lista}, 200
 
         except Exception as e:
+            
+            print(e)
             return {"status": "error", "message": f"Erro ao listar autorizações de movimentação: {str(e)}"}, 500
 
     def inclusaoMovUsuario(self, dados):

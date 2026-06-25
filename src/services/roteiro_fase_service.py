@@ -21,6 +21,7 @@ class ServiceRoteiroFase:
                     "fase_simultanea": row[4]
                 })
 
+
             return {"status": "success", "data": fases_lista}, 200
 
         except Exception as e:
