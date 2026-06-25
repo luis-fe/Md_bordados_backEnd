@@ -34,18 +34,18 @@ CREATE TABLE IF NOT EXISTS roteiro_padrao (
 CREATE TABLE IF NOT EXISTS usuario (
     cod_usuario SERIAL PRIMARY KEY,
     nome_usuario VARCHAR(100) NOT NULL,
-    login VARCHAR(50) UNIQUE,        -- Adicionado para compatibilidade com o PHP
-    perfil VARCHAR(30),              -- Adicionado para compatibilidade com o PHP
-    status INT DEFAULT 1,            -- Nova coluna: 1 Ativo, 0 Inativo
-    contato VARCHAR(20),             -- Nova coluna: Contato do usuário
-    senha VARCHAR(50),
-    "corTema" VARCHAR(10) DEFAULT 'Branca' CHECK ("corTema" IN ('Preto', 'Branca')) -- Nova coluna para o tema visual
+    login VARCHAR(50) UNIQUE,        
+    perfil VARCHAR(30),              
+    status INT DEFAULT 1,            
+    contato VARCHAR(20),             
+    senha VARCHAR(255),              -- CORREÇÃO: Aumentado para 255 para suportar hash Bcrypt (60 chars)
+    "corTema" VARCHAR(20) DEFAULT 'Branca' CHECK ("corTema" IN ('Preto', 'Branca', 'Escura')) -- CORREÇÃO: Alinhado com a regra de negócio do backend
 );
 
 CREATE TABLE IF NOT EXISTS tamanho (
     cod_tamanho VARCHAR(10) PRIMARY KEY,
     descricao_tamanho VARCHAR(50),
-    "sequenciaTamanho" INT           -- Nova coluna (com aspas devido à letra maiúscula)
+    "sequenciaTamanho" INT           
 );
 
 CREATE TABLE IF NOT EXISTS autoriza_rotina (
@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS autoriza_rotina (
 -- 2. TABELAS DE LIGAÇÃO E DEPENDENTES (Com chaves estrangeiras)
 -- ==============================================================================
 
--- Nova tabela de amarração para permissões de usuários
 CREATE TABLE IF NOT EXISTS usuario_autorizado (
     cod_usuario INT NOT NULL,
     id_rotina INT NOT NULL,
@@ -70,7 +69,7 @@ CREATE TABLE IF NOT EXISTS roteiro_padrao_fase (
     cod_roteiro INT NOT NULL,
     cod_fase INT NOT NULL,
     sequencia INT NOT NULL,
-    "faseSimultanea" VARCHAR(50),    -- Nova coluna adicionada
+    "faseSimultanea" VARCHAR(50),    
     PRIMARY KEY (cod_roteiro, cod_fase),
     CONSTRAINT fk_roteiro FOREIGN KEY (cod_roteiro) REFERENCES roteiro_padrao(cod_roteiro) ON DELETE CASCADE,
     CONSTRAINT fk_fase FOREIGN KEY (cod_fase) REFERENCES fase(cod_fase) ON DELETE RESTRICT
@@ -104,11 +103,11 @@ CREATE TABLE IF NOT EXISTS ordem_producao (
 CREATE TABLE IF NOT EXISTS grade_op (
     cod_op VARCHAR(50) NOT NULL,
     cod_tamanho VARCHAR(10) NOT NULL,
-    cor VARCHAR(50) NOT NULL DEFAULT 'Sem Cor', -- Coluna adicionada para suporte a Grade/Cor
+    cor VARCHAR(50) NOT NULL DEFAULT 'Sem Cor', 
     quantidade_qual_1 INT DEFAULT 0,
     quantidade_qual_2 INT DEFAULT 0,
     quantidade_cancelada INT DEFAULT 0,
-    PRIMARY KEY (cod_op, cod_tamanho, cor),     -- Atualizado para incluir a cor na chave primária
+    PRIMARY KEY (cod_op, cod_tamanho, cor),     
     CONSTRAINT fk_grade_op FOREIGN KEY (cod_op) REFERENCES ordem_producao(cod_op) ON DELETE CASCADE,
     CONSTRAINT fk_grade_tam FOREIGN KEY (cod_tamanho) REFERENCES tamanho(cod_tamanho) ON DELETE RESTRICT
 );
@@ -141,7 +140,6 @@ CREATE TABLE IF NOT EXISTS mov_fase_tam (
 -- 3. TRIGGERS E FUNÇÕES
 -- ==============================================================================
 
--- Função para concatenar op + cliente (O OR REPLACE já garante que não dará erro se existir)
 CREATE OR REPLACE FUNCTION func_gerar_id_op_cliente()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -150,10 +148,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Remove a trigger se ela já existir para poder recriá-la com segurança
 DROP TRIGGER IF EXISTS trg_gerar_id_op_cliente ON ordem_producao;
 
--- Cria a Trigger
 CREATE TRIGGER trg_gerar_id_op_cliente
 BEFORE INSERT OR UPDATE ON ordem_producao
 FOR EACH ROW
@@ -163,25 +159,36 @@ EXECUTE FUNCTION func_gerar_id_op_cliente();
 -- 4. ATUALIZAÇÕES DE COLUNAS (Para tabelas que já existem)
 -- ==============================================================================
 
--- Atualiza a tabela de tamanhos
 ALTER TABLE tamanho ADD COLUMN IF NOT EXISTS "sequenciaTamanho" INT;
 
--- Atualiza a tabela de usuários
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS login VARCHAR(50) UNIQUE;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS perfil VARCHAR(30);
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS status INT DEFAULT 1;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS contato VARCHAR(20);
-ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(50);
-ALTER TABLE usuario ADD COLUMN IF NOT EXISTS "corTema" VARCHAR(10) DEFAULT 'Branca' CHECK ("corTema" IN ('Preto', 'Branca')); -- Atualização adicionada
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS senha VARCHAR(255); -- CORREÇÃO
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS "corTema" VARCHAR(20) DEFAULT 'Branca'; 
 
--- Atualiza a tabela de roteiro_padrao_fase
 ALTER TABLE roteiro_padrao_fase ADD COLUMN IF NOT EXISTS "faseSimultanea" VARCHAR(50);
 
--- Atualiza a tabela de grade_op para adicionar a coluna cor se ela não existir
 ALTER TABLE grade_op ADD COLUMN IF NOT EXISTS cor VARCHAR(50) NOT NULL DEFAULT 'Sem Cor';
 
+-- CORREÇÃO: Garante que, se a tabela grade_op já existia e a coluna 'cor' foi adicionada via ALTER TABLE, 
+-- a Chave Primária será atualizada para incluir a nova coluna.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name = 'grade_op' AND constraint_type = 'PRIMARY KEY'
+    ) THEN
+        ALTER TABLE grade_op DROP CONSTRAINT grade_op_pkey;
+        ALTER TABLE grade_op ADD PRIMARY KEY (cod_op, cod_tamanho, cor);
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    -- Ignora se a constraint tiver outro nome gerado dinamicamente
+END $$;
+
 -- ==============================================================================
--- 5. CARGA DE DADOS INICIAIS (Valores padrão da tabela autoriza_rotina)
+-- 5. CARGA DE DADOS INICIAIS
 -- ==============================================================================
 
 INSERT INTO autoriza_rotina (rotina) VALUES
@@ -189,7 +196,7 @@ INSERT INTO autoriza_rotina (rotina) VALUES
 ('visualizar usuarios cadastrado'),
 ('cadastro clientes (inclusao , edicao , exclusao)'),
 ('visualizar clientes'),
-('condigurar tamanhos'),
+('configurar tamanhos'), -- CORREÇÃO: Digitação arrumada
 ('configurar fases'),
 ('configurar roteiro'),
 ('visualizar relatorio producao'),

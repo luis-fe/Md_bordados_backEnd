@@ -6,16 +6,19 @@ class MovUsuario:
         pass
 
     def cadastrarMovUsuario(self, cod_usuario, cod_fase):
+        # O 'ON CONFLICT DO NOTHING' barra a duplicação direto no banco de dados.
         query = """
             INSERT INTO mov_usuario (cod_usuario, cod_fase)
-            VALUES (%s, %s) RETURNING cod_mov_usuario;
+            VALUES (%s, %s)
+            ON CONFLICT (cod_usuario, cod_fase) DO NOTHING;
         """
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
                 cursor.execute(query, (cod_usuario, cod_fase))
                 conn.commit()
-                return cursor.fetchone()[0] # Retorna o ID gerado
+                # Retorna True se inseriu um novo, ou False se já existia (ignorado pelo conflito)
+                return cursor.rowcount > 0 
         except Exception as e:
             conn.rollback() 
             raise e
@@ -23,7 +26,6 @@ class MovUsuario:
             conn.close() 
 
     def buscarTodasMovUsuarios(self):
-        # Faz um JOIN simples para trazer o nome do usuário e a descrição da fase, facilitando no front-end
         query = """
             SELECT m.cod_usuario, u.nome_usuario, m.cod_fase, f.descricao_fase 
             FROM mov_usuario m
@@ -39,31 +41,18 @@ class MovUsuario:
         finally:
             conn.close()
 
-    def editarMovUsuario(self, cod_mov_usuario, cod_usuario, cod_fase):
+    def excluirMovUsuario(self, cod_usuario, cod_fase):
+        # A exclusão agora exige a combinação das duas chaves
         query = """
-            UPDATE mov_usuario 
-            SET cod_usuario = %s, cod_fase = %s 
-            WHERE cod_mov_usuario = %s;
+            DELETE FROM mov_usuario 
+            WHERE cod_usuario = %s AND cod_fase = %s;
         """
         conn = db_config.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute(query, (cod_usuario, cod_fase, cod_mov_usuario))
+                cursor.execute(query, (cod_usuario, cod_fase))
                 conn.commit()
-                return cursor.rowcount > 0 
-        except Exception as e:
-            conn.rollback()
-            raise e
-        finally:
-            conn.close()
-
-    def excluirMovUsuario(self, cod_mov_usuario):
-        query = "DELETE FROM mov_usuario WHERE cod_mov_usuario = %s;"
-        conn = db_config.get_db_connection()
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(query, (cod_mov_usuario,))
-                conn.commit()
+                # Retorna True se deletou alguma linha
                 return cursor.rowcount > 0 
         except Exception as e:
             conn.rollback()
