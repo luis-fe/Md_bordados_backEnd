@@ -25,11 +25,11 @@ class MovUsuario:
     def buscarTodasMovUsuarios(self):
         # Faz um JOIN simples para trazer o nome do usuário e a descrição da fase, facilitando no front-end
         query = """
-            SELECT m.cod_mov_usuario, m.cod_usuario, u.nome_usuario, m.cod_fase, f.descricao_fase 
+            SELECT m.cod_usuario, u.nome_usuario, m.cod_fase, f.descricao_fase 
             FROM mov_usuario m
             INNER JOIN usuario u ON m.cod_usuario = u.cod_usuario
             INNER JOIN fase f ON m.cod_fase = f.cod_fase
-            ORDER BY m.cod_mov_usuario ASC;
+            ORDER BY u.nome_usuario ASC;
         """
         conn = db_config.get_db_connection()
         try:
