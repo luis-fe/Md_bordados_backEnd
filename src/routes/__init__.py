@@ -10,6 +10,8 @@ from .roteiro_routes import roteiro_bp
 from .roteiro_fase_routes import roteiro_fase_bp
 from .op_routes import op_bp
 from .grade_op_routes import grade_op_bp
+from .mov_usuario_routes import mov_usuario_bp
+
 def init_routes(app):
     """
     Função responsável por registrar todos os Blueprints na aplicação Flask.
@@ -26,6 +28,7 @@ def init_routes(app):
     app.register_blueprint(roteiro_fase_bp, url_prefix='/api')
     app.register_blueprint(op_bp, url_prefix='/api')
     app.register_blueprint(grade_op_bp, url_prefix='/api')
+    app.register_blueprint(mov_usuario_bp, url_prefix='/api')
 
     # app.register_blueprint(fase_bp, url_prefix='/api')
     # app.register_blueprint(roteiro_bp, url_prefix='/api')
